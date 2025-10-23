@@ -1,10 +1,9 @@
-using 
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MarkShop.Models;
 
-try.Models;
-
-namespace try.Controllers;
+namespace MarkShop.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
