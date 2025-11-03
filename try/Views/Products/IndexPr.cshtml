@@ -1,0 +1,45 @@
+﻿@model IEnumerable<MarkShop.Models.Product>
+@* 
+השורה מאפשרת לעבור על כל המוצרים הנמצאים בטבלה
+למשל באמצעות לולאת 
+foreach
+ *@
+@{
+    ViewData["Title"] = "Product List";
+}
+
+<h2>Product List</h2>@* כותרת הדף *@
+
+<table class="table table-striped">
+    @* כותרות העמודות *@
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Image</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Price.ToString("C")</td>
+                <td>@product.Description</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" alt="@product.Name" style="max-width:100px;max-height:100px;" />
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-warning btn-sm" href="@Url.Action("EditPr", "Product", new { id = product.Id })">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-primary" href="@Url.Action("CreatePr", "Product")">Add New Product</a>
