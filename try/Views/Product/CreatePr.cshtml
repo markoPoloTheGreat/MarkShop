@@ -1,0 +1,44 @@
+﻿@model MarkShop.Models.Product
+
+@{
+    ViewData["Title"] = "Add New Product";
+}
+
+<h2>Add New Product</h2>
+
+<form asp-action="CreatePr" method="post">
+    <div class="form-group">
+
+        @* שורה שם תוית שם השדה *@
+        <label asp-for="Name" class="control-label"></label>
+
+        @* כאן יוזן ערך השדה-במקרה זה השם *@
+        <input asp-for="Name" class="form-control" />
+
+        @* השורה הבאה מנהלת הזנה שאינה עומדת בדרישות המודל *@
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Price" class="control-label"></label>
+        <input asp-for="Price" class="form-control" type="number" step="0.01" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ImageUrl" class="control-label"></label>
+        <input asp-for="ImageUrl" class="form-control" />
+        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="IndexPr1" class="btn btn-secondary">Back to List</a>
+</form>
+@* הקוד הבא מאפשר לבצע וולידציית נתוכים מוזנים בצד לקוח בלי לפנות לשרת *@
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
