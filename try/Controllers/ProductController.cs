@@ -11,7 +11,7 @@ namespace MarkShop.Controllers
             _context = context;
         }
 
-        public IActionResult IndexPr()
+        public IActionResult IndexPr1()
         {
             var products = _context.Products.ToList();
             return View(products);
