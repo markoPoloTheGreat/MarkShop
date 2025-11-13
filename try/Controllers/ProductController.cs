@@ -69,7 +69,7 @@ namespace MarkShop.Controllers
             {
                 try
                 {
-                    _context.Update(product);
+                    _context.Products.Update(product);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
