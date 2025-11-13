@@ -1,6 +1,7 @@
 ﻿using MarkShop.Data.ShopSbS.Data;
 using MarkShop.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 namespace MarkShop.Controllers
 {
     public class ProductController : Controller
@@ -37,9 +38,58 @@ namespace MarkShop.Controllers
             }
             return View(product);
         }
-        public IActionResult EditPr(int id)
+        public async Task<IActionResult> EditPr(int? id)
         {
-            return View(id);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
+        }
+
+        //POST: ShoppingCarts/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditPr(int id, [Bind("Id,Name,Price,Description,ImageUrl")] Product product)
+        {
+            if (id != product.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(product);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!productExists(product.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(product);
+        }
+        private bool productExists(int id)
+        {
+            return _context.Products.Any(e => e.Id == id);
         }
     }
 }
