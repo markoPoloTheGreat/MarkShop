@@ -58,7 +58,7 @@ namespace MarkShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPr(int id, [Bind("Id,Name,Price,Description,ImageUrl")] Product product)
+        public async Task<IActionResult> EditPr(int id, Product product)
         {
             if (id != product.Id)
             {
@@ -69,7 +69,7 @@ namespace MarkShop.Controllers
             {
                 try
                 {
-                    _context.Products.Update(product);
+                    _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -83,9 +83,40 @@ namespace MarkShop.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(IndexPr1));
             }
             return View(product);
+        }
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = await _context.Products
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
+        // POST: ShoppingCarts/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int Id, string Name, double Price, string Description, string ImageUrl)
+        {
+            var product = await _context.Products.FindAsync(Id,Name,Price,Description,ImageUrl);
+            if (product != null)
+            {
+                _context.Products.Remove(product);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(IndexPr1));
         }
         private bool productExists(int id)
         {

@@ -7,7 +7,6 @@ foreach
 @{
     ViewData["Title"] = "Product List";
 }
-
 <h2>Product List</h2>@* כותרת הדף *@
 
 <table class="table table-striped">
@@ -29,9 +28,9 @@ foreach
                 <td>@product.Price.ToString("C")</td>
                 <td>@product.Description</td>
                 <td>
-                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    @if (product.ImageUrl!=null)
                     {
-                        <img src="@product.ImageUrl" alt="@product.Name" style="max-width:1000px;max-height:1000px;" />
+                        <img src="@Url.Content(product.ImageUrl)" width="100" height="100" />
                     }
                 </td>
                 <td>
