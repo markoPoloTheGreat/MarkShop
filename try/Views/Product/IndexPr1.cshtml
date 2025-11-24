@@ -36,6 +36,9 @@ foreach
                 <td>
                     <a class="btn btn-warning btn-sm" href="@Url.Action("EditPr", "Product", new { id = product.Id })">Edit</a>
                 </td>
+                <td>
+                    <a class="btn btn-warning btn-sm" href="@Url.Action("DeletePr", "Product", new { id = product.Id })">Delete</a>
+                </td>
             </tr>
         }
     </tbody>

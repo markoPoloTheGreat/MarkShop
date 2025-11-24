@@ -20,7 +20,7 @@ namespace MarkShop.Controllers
         }
 
         // GET: ShoppingCarts
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> IndexShC()
         {
             return View(await _context.shoppingCarts.ToListAsync());
         }

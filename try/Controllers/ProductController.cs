@@ -87,37 +87,29 @@ namespace MarkShop.Controllers
             }
             return View(product);
         }
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> DeletePr(int? id)
         {
+            
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _context.Products.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
-
-            return View(product);
-        }
-
-        // POST: ShoppingCarts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int Id, string Name, double Price, string Description, string ImageUrl)
-        {
-            var product = await _context.Products.FindAsync(Id,Name,Price,Description,ImageUrl);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
-
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(IndexPr1));
         }
+        //----------------------------SHOPPING CART--------------------
+        
+        // POST: ShoppingCarts/Delete/5
+        [HttpPost, ActionName("DeletePr")]
+        [ValidateAntiForgeryToken]
         private bool productExists(int id)
         {
             return _context.Products.Any(e => e.Id == id);
