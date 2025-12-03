@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MarkShop.Data.ShopSbS.Data;
 using MarkShop.Models;
+using MarkShop.Controllers;
 
 namespace MarkShop.Controllers
 {
@@ -58,9 +59,24 @@ namespace MarkShop.Controllers
         {
             if (ModelState.IsValid)
             {
+                var sc = new ShoppingCart();
+
+                // 2. Link it to the Customer
+                // This tells Entity Framework: "This cart belongs to the customer we are about to create."
+                sc.Customer = customer;
+                sc.CustomerId=customer.Id;
+
+                // 3. Add BOTH to the database context
                 _context.Add(customer);
+
+                // FIX: Use 'shoppingCarts' (lowercase s, plural) to match your AppDbContext.cs
+                _context.shoppingCarts.Add(sc);
+
+                // 4. Save everything in one go
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
+
             }
             return View(customer);
         }

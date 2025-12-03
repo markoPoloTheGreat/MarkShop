@@ -54,7 +54,7 @@ namespace MarkShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CustomerId,IsCheckedOut")] ShoppingCart shoppingCart)
+        public async Task<IActionResult> Create1([Bind("Id,CustomerId,IsCheckedOut")] ShoppingCart shoppingCart)
         {
             if (ModelState.IsValid)
             {
