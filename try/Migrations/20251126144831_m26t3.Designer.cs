@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarkShop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251103113859_m3")]
-    partial class m3
+    [Migration("20251126144831_m26t3")]
+    partial class m26t3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,13 +106,15 @@ namespace MarkShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CostumerId")
+                    b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCheckedOut")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.ToTable("shoppingCarts");
                 });
@@ -122,6 +124,17 @@ namespace MarkShop.Migrations
                     b.HasOne("MarkShop.Models.ShoppingCart", null)
                         .WithMany("Items")
                         .HasForeignKey("ShoppingCartId");
+                });
+
+            modelBuilder.Entity("MarkShop.Models.ShoppingCart", b =>
+                {
+                    b.HasOne("MarkShop.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("MarkShop.Models.ShoppingCart", b =>

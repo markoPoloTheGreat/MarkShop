@@ -5,7 +5,7 @@
 namespace MarkShop.Migrations
 {
     /// <inheritdoc />
-    public partial class m3 : Migration
+    public partial class m26t3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,12 +46,18 @@ namespace MarkShop.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CostumerId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
                     IsCheckedOut = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_shoppingCarts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_shoppingCarts_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,6 +84,11 @@ namespace MarkShop.Migrations
                 name: "IX_CartItems_ShoppingCartId",
                 table: "CartItems",
                 column: "ShoppingCartId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_shoppingCarts_CustomerId",
+                table: "shoppingCarts",
+                column: "CustomerId");
         }
 
         /// <inheritdoc />
@@ -87,13 +98,13 @@ namespace MarkShop.Migrations
                 name: "CartItems");
 
             migrationBuilder.DropTable(
-                name: "Customers");
-
-            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "shoppingCarts");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
         }
     }
 }

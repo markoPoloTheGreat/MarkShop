@@ -103,13 +103,15 @@ namespace MarkShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CostumerId")
+                    b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCheckedOut")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.ToTable("shoppingCarts");
                 });
@@ -119,6 +121,17 @@ namespace MarkShop.Migrations
                     b.HasOne("MarkShop.Models.ShoppingCart", null)
                         .WithMany("Items")
                         .HasForeignKey("ShoppingCartId");
+                });
+
+            modelBuilder.Entity("MarkShop.Models.ShoppingCart", b =>
+                {
+                    b.HasOne("MarkShop.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("MarkShop.Models.ShoppingCart", b =>
