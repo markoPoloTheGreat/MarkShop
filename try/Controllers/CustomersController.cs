@@ -55,28 +55,21 @@ namespace MarkShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email")] Customer customer)
+        public async Task<IActionResult> Create([Bind("Id,Name,Email,Password")] Customer customer)
         {
             if (ModelState.IsValid)
             {
-                var sc = new ShoppingCart();
-
-                // 2. Link it to the Customer
-                // This tells Entity Framework: "This cart belongs to the customer we are about to create."
-                sc.Customer = customer;
-                sc.CustomerId=customer.Id;
-
-                // 3. Add BOTH to the database context
+                // 1. Add Customer
                 _context.Add(customer);
 
-                // FIX: Use 'shoppingCarts' (lowercase s, plural) to match your AppDbContext.cs
+                // 2. Create and Link Shopping Cart
+                var sc = new ShoppingCart();
+                sc.Customer = customer;
                 _context.shoppingCarts.Add(sc);
 
-                // 4. Save everything in one go
+                // 3. Save Changes
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction(nameof(Index));
-
             }
             return View(customer);
         }

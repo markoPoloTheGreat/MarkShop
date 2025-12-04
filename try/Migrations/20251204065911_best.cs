@@ -5,7 +5,7 @@
 namespace MarkShop.Migrations
 {
     /// <inheritdoc />
-    public partial class m26t3 : Migration
+    public partial class best : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,7 +46,7 @@ namespace MarkShop.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: true),
                     IsCheckedOut = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -56,8 +56,7 @@ namespace MarkShop.Migrations
                         name: "FK_shoppingCarts_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(

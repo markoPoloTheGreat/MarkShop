@@ -148,6 +148,46 @@ namespace MarkShop.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        public async Task<IActionResult> AddToCart(int productId)
+        {
+            // 1. Get the current user's ID from the cookie
+            // We stored this as "CustomerId" inside the Login function earlier
+            var userIdString = User.FindFirst("CustomerId")?.Value;
+
+            if (userIdString == null)
+            {
+                // If not logged in, force them to login
+                return RedirectToAction("Login", "Account");
+            }
+
+            int customerId = int.Parse(userIdString);
+
+            // 2. Find the Cart (Same code as before, but using the real ID)
+            var cart = await _context.shoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            // If cart doesn't exist, create one automatically
+            if (cart == null)
+            {
+                cart = new ShoppingCart { CustomerId = customerId };
+                _context.shoppingCarts.Add(cart);
+            }
+
+            // 3. Check/Add Item Logic (Same as before)
+            var cartItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (cartItem != null)
+            {
+                cartItem.Quantity++;
+            }
+            else
+            {
+                cart.Items.Add(new CartItem { ProductId = productId, Quantity = 1 });
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("IndexPr1", "Product");
+        }
 
         private bool ShoppingCartExists(int id)
         {
