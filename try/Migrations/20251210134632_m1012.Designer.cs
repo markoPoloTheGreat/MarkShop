@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarkShop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251204072445_AddPasswordToCustomer")]
-    partial class AddPasswordToCustomer
+    [Migration("20251210134632_m1012")]
+    partial class m1012
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

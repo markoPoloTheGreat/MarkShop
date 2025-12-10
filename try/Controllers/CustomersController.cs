@@ -95,7 +95,7 @@ namespace MarkShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email")] Customer customer)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Password")] Customer customer)
         {
             if (id != customer.Id)
             {
@@ -128,36 +128,28 @@ namespace MarkShop.Controllers
         // GET: Customers/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (customer == null)
+            var cust = await _context.Customers.FindAsync(id);
+            if (cust == null)
             {
                 return NotFound();
             }
-
-            return View(customer);
-        }
-
-        // POST: Customers/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer != null)
+            var sc = await _context.shoppingCarts.FindAsync(id);
+            if (sc == null)
             {
-                _context.Customers.Remove(customer);
+                return NotFound();
             }
-
+            _context.shoppingCarts.Remove(sc);
+            _context.Customers.Remove(cust);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
-
         private bool CustomerExists(int id)
         {
             return _context.Customers.Any(e => e.Id == id);
