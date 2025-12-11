@@ -1,0 +1,81 @@
+﻿@model MarkShop.Models.ShoppingCart
+
+@{
+    ViewData["Title"] = "Cart Details";
+    double grandTotal = 0;
+    
+    // Get the list of products we sent from the controller
+    var productList = ViewBag.ProductList as List<MarkShop.Models.Product>;
+}
+
+<div class="container mt-4">
+    <h1>My Shopping Cart</h1>
+    <hr />
+
+    <div class="alert alert-secondary">
+        <strong>Cart Status:</strong> @(Model.IsCheckedOut ? "Checked Out" : "Active") <br />
+        <strong>Owner:</strong> @Model.Customer?.Name
+    </div>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="text-center py-5">
+            <h3>Your cart is empty!</h3>
+            <a asp-controller="Product" asp-action="IndexPr1" class="btn btn-primary mt-3">Go Shopping</a>
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped table-hover mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    // Find the matching product from our ViewBag list using the ID
+                    var product = productList?.FirstOrDefault(p => p.Id == item.ProductId);
+
+                    // If product was deleted but still in cart, handle gracefully
+                    string name = product != null ? product.Name : "Unknown Product";
+                    string desc = product != null ? product.Description : "";
+                    double price = product != null ? product.Price : 0;
+                    
+                    double lineTotal = price * item.Quantity;
+                    grandTotal += lineTotal;
+
+                    <tr>
+                        <td>
+                            <strong>@name</strong>
+                            <br/>
+                            <small class="text-muted">@desc</small>
+                        </td>
+                        <td>@price.ToString("C")</td>
+                        <td>x @item.Quantity</td>
+                        <td class="text-end">@lineTotal.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-active border-top border-dark">
+                    <td colspan="3" class="text-end"><strong>Grand Total:</strong></td>
+                    <td class="text-end"><strong>@grandTotal.ToString("C")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="IndexShC" class="btn btn-outline-secondary">Back to My Carts</a>
+            
+            @if(!Model.IsCheckedOut)
+            {
+                <button class="btn btn-success btn-lg">Proceed to Checkout</button>
+            }
+        </div>
+    }
+</div>

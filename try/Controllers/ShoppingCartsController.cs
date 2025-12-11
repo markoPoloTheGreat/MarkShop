@@ -22,7 +22,25 @@ namespace MarkShop.Controllers
         // GET: ShoppingCarts
         public async Task<IActionResult> IndexShC()
         {
-            return View(await _context.shoppingCarts.ToListAsync());
+            // 1. Security Check: Is user logged in?
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // 2. Get the current user's ID
+            var userIdString = User.FindFirst("CustomerId")?.Value;
+            if (userIdString == null) return RedirectToAction("Login", "Account");
+
+            int customerId = int.Parse(userIdString);
+
+            // 3. Filter: Only show carts that belong to THIS customer
+            var myCarts = await _context.shoppingCarts
+                .Include(s => s.Customer)
+                .Where(s => s.CustomerId == customerId) // <--- The Logic
+                .ToListAsync();
+
+            return View(myCarts);
         }
 
         // GET: ShoppingCarts/Details/5
@@ -80,7 +98,46 @@ namespace MarkShop.Controllers
             }
             return View(shoppingCart);
         }
+        public async Task<IActionResult> AddToCart(int productId)
+        {
+            // 1. Get the current user's ID from the cookie
+            // We stored this as "CustomerId" inside the Login function earlier
+            var userIdString = User.FindFirst("CustomerId")?.Value;
 
+            if (userIdString == null)
+            {
+                // If not logged in, force them to login
+                return RedirectToAction("Login", "Account");
+            }
+
+            int customerId = int.Parse(userIdString);
+
+            // 2. Find the Cart (Same code as before, but using the real ID)
+            var cart = await _context.shoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            // If cart doesn't exist, create one automatically
+            if (cart == null)
+            {
+                cart = new ShoppingCart { CustomerId = customerId };
+                _context.shoppingCarts.Add(cart);
+            }
+
+            // 3. Check/Add Item Logic (Same as before)
+            var cartItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (cartItem != null)
+            {
+                cartItem.Quantity++;
+            }
+            else
+            {
+                cart.Items.Add(new CartItem { ProductId = productId, Quantity = 1 });
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("IndexPr1", "Product");
+        }
         // POST: ShoppingCarts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -135,46 +192,7 @@ namespace MarkShop.Controllers
 
             return RedirectToAction(nameof(IndexShC));
         }
-        public async Task<IActionResult> AddToCart(int productId)
-        {
-            // 1. Get the current user's ID from the cookie
-            // We stored this as "CustomerId" inside the Login function earlier
-            var userIdString = User.FindFirst("CustomerId")?.Value;
 
-            if (userIdString == null)
-            {
-                // If not logged in, force them to login
-                return RedirectToAction("Login", "Account");
-            }
-
-            int customerId = int.Parse(userIdString);
-
-            // 2. Find the Cart (Same code as before, but using the real ID)
-            var cart = await _context.shoppingCarts
-                .Include(c => c.Items)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-            // If cart doesn't exist, create one automatically
-            if (cart == null)
-            {
-                cart = new ShoppingCart { CustomerId = customerId };
-                _context.shoppingCarts.Add(cart);
-            }
-
-            // 3. Check/Add Item Logic (Same as before)
-            var cartItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
-            if (cartItem != null)
-            {
-                cartItem.Quantity++;
-            }
-            else
-            {
-                cart.Items.Add(new CartItem { ProductId = productId, Quantity = 1 });
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("IndexPr1", "Product");
-        }
 
         private bool ShoppingCartExists(int id)
         {

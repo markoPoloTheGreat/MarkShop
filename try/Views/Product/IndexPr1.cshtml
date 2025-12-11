@@ -39,6 +39,13 @@ foreach
                 <td>
                     <a class="btn btn-warning btn-sm" href="@Url.Action("DeletePr", "Product", new { id = product.Id })">Delete</a>
                 </td>
+                <td>
+                    <a class="btn btn-success btn-sm"
+                       href="@Url.Action("AddToCart", "ShoppingCarts", new { productId = product.Id })">
+                        Add To Cart
+                    </a>
+                </td>
+
             </tr>
         }
     </tbody>
