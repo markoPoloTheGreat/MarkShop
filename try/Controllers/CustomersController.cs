@@ -139,12 +139,23 @@ namespace MarkShop.Controllers
             {
                 return NotFound();
             }
-            var sc = await _context.shoppingCarts.FindAsync(id);
-            if (sc == null)
+            var sc = await _context.shoppingCarts
+                           .Include(c => c.Items)
+                           .FirstOrDefaultAsync(c => c.CustomerId == id);
+
+            if (sc != null)
             {
-                return NotFound();
+                // 3. FIX: Remove all items from the cart first
+                if (sc.Items != null && sc.Items.Any())
+                {
+                    _context.CartItems.RemoveRange(sc.Items);
+                }
+
+                // 4. Now it is safe to remove the empty cart
+                _context.shoppingCarts.Remove(sc);
             }
-            _context.shoppingCarts.Remove(sc);
+
+            // 5. Finally, remove the customer
             _context.Customers.Remove(cust);
             await _context.SaveChangesAsync();
 
