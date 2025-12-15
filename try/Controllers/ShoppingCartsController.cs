@@ -44,6 +44,8 @@ namespace MarkShop.Controllers
         }
 
         // GET: ShoppingCarts/Details/5
+        // GET: ShoppingCarts/Details/5
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -52,15 +54,35 @@ namespace MarkShop.Controllers
             }
 
             var shoppingCart = await _context.shoppingCarts
+                .Include(c => c.Items) // <--- FIX 1: Actually load the items from the database
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (shoppingCart == null)
             {
                 return NotFound();
             }
 
+            // <--- FIX 2: Pass the list of products so the View can find names and prices
+            ViewBag.ProductList = await _context.Products.ToListAsync();
+
             return View(shoppingCart);
         }
+        // GET: ShoppingCarts/RemoveFromCart?itemId=5&cartId=10
+        public async Task<IActionResult> RemoveFromCart(int itemId, int cartId)
+        {
+            // 1. Find the specific item in the database
+            var cartItem = await _context.CartItems.FindAsync(itemId);
 
+            // 2. Remove it if it exists
+            if (cartItem != null)
+            {
+                _context.CartItems.Remove(cartItem);
+                await _context.SaveChangesAsync();
+            }
+
+            // 3. Redirect back to the Details view of the specific cart
+            return RedirectToAction("Details", new { id = cartId });
+        }
         // GET: ShoppingCarts/Create
         public IActionResult Create()
         {
@@ -108,19 +130,18 @@ namespace MarkShop.Controllers
             int customerId = int.Parse(claim.Value);
 
             // 2. Load the Cart AND its Items
-            // We use .Include so EF knows about the existing list
+            // FIX: specific filter added to find only the ACTIVE cart (not checked out)
             var cart = await _context.shoppingCarts
                 .Include(c => c.Items)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && !c.IsCheckedOut);
 
-            // 3. Create Cart if it doesn't exist
+            // 3. Create Cart if it doesn't exist (or if all previous carts are checked out)
             if (cart == null)
             {
                 cart = new ShoppingCart { CustomerId = customerId };
                 _context.shoppingCarts.Add(cart);
 
                 // CRITICAL STEP: Save NOW to generate the Cart ID
-                // Without this, the items don't know which cart ID to attach to loosely
                 await _context.SaveChangesAsync();
             }
 
@@ -133,8 +154,6 @@ namespace MarkShop.Controllers
             }
             else
             {
-                // We add directly to the 'Items' list.
-                // EF Core detects this and sets the shadow "ShoppingCartId" for us.
                 cart.Items.Add(new CartItem
                 {
                     ProductId = productId,
