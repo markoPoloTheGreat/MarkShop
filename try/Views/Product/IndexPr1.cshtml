@@ -1,51 +1,57 @@
 ﻿@model IEnumerable<MarkShop.Models.Product>
-@* 
-השורה מאפשרת לעבור על כל המוצרים הנמצאים בטבלה
-למשל באמצעות לולאת 
-foreach
- *@
 @{
     ViewData["Title"] = "Product List";
 }
-<h2>Product List</h2>@* כותרת הדף *@
+<h2>Product List</h2>
 
 <table class="table table-striped">
-    @* כותרות העמודות *@
     <thead>
         <tr>
             <th>Name</th>
+            <th>Brand</th>
             <th>Price</th>
+            <th>Type</th>
+            <th>Color</th>
+            <th>Nib</th>
+            <th>Style</th>
+            <th>Usage</th>
             <th>Description</th>
             <th>Image</th>
             <th>Actions</th>
         </tr>
     </thead>
+
     <tbody>
         @foreach (var product in Model)
         {
             <tr>
                 <td>@product.Name</td>
+                <td>@product.Brand</td>
                 <td>@product.Price.ToString("C")</td>
-                <td>@product.Description</td>
+                <td>@product.Type</td>
+                <td>@product.Color</td>
+                <td>@product.NibSize</td>
+                <td>@(product.Style?.ToString() ?? "N/A")</td>
+                <td>@(product.Usage?.ToString() ?? "N/A")</td>
+                <td title="@product.Description">
+                    @(product.Description.Length > 50 ? product.Description.Substring(0, 47) + "..." : product.Description)
+                </td>
                 <td>
-                    @if (product.ImageUrl!=null)
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
                     {
-                        <img src="@Url.Content(product.ImageUrl)" width="100" height="100" />
+                        <img src="@Url.Content(product.ImageUrl)" width="60" height="60" style="object-fit: contain;" />
                     }
                 </td>
                 <td>
-                    <a class="btn btn-warning btn-sm" href="@Url.Action("EditPr", "Product", new { id = product.Id })">Edit</a>
+                    <div class="btn-group">
+                        <a class="btn btn-warning btn-sm" href="@Url.Action("EditPr", "Product", new { id = product.Id })">Edit</a>
+                        <a class="btn btn-danger btn-sm" href="@Url.Action("DeletePr", "Product", new { id = product.Id })"
+                           onclick="return confirm('Are you sure?')">Delete</a>
+                        <a class="btn btn-success btn-sm" href="@Url.Action("AddToCart", "ShoppingCarts", new { productId = product.Id })">
+                            Add To Cart
+                        </a>
+                    </div>
                 </td>
-                <td>
-                    <a class="btn btn-warning btn-sm" href="@Url.Action("DeletePr", "Product", new { id = product.Id })">Delete</a>
-                </td>
-                <td>
-                    <a class="btn btn-success btn-sm"
-                       href="@Url.Action("AddToCart", "ShoppingCarts", new { productId = product.Id })">
-                        Add To Cart
-                    </a>
-                </td>
-
             </tr>
         }
     </tbody>

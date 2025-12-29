@@ -1,44 +1,55 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MarkShop.Data.ShopSbS.Data;
+using MarkShop.Data; // 1. Add this to access the SeedData class
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container...
 builder.Services.AddControllersWithViews();
 
-// Database Context Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// NEW: Add Authentication Service
-// This tells the app: "We are using Cookies to track logged-in users"
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // If a user tries to access a protected page, send them here:
         options.LoginPath = "/Account/Login";
-        // How long the login lasts before they must sign in again (e.g., 20 minutes)
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 2. Resolve the database context and call the seeder
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        // Optional: Ensures the database exists before seeding
+        context.Database.EnsureCreated();
+
+        // Call your static Initialize method
+        SeedData.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
+
+// Configure the HTTP request pipeline...
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// NEW: Turn on Authentication Middleware
-// IMPORTANT: This MUST come before 'UseAuthorization'
 app.UseAuthentication();
 app.UseAuthorization();
 
