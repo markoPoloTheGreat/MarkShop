@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MarkShop.Models.Product>
+﻿@* @model IEnumerable<MarkShop.Models.Product>
 @{
     ViewData["Title"] = "Product List";
 }
@@ -57,4 +57,73 @@
     </tbody>
 </table>
 
-<a class="btn btn-primary" href="@Url.Action("CreatePr", "Product")">Add New Product</a>
+<a class="btn btn-primary" href="@Url.Action("CreatePr", "Product")">Add New Product</a> *@
+
+@model IEnumerable<MarkShop.Models.Product>
+@{
+    ViewData["Title"] = "Product List";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Fountain Pen Collection</h2>
+        <a class="btn btn-primary" href="@Url.Action("CreatePr", "Product")">Add New Product</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            The database is currently empty. Please check the Seeder logs or the pens.csv file.
+        </div>
+    }
+    else
+    {
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>Price</th>
+                    <th>Specs (Nib/Color)</th>
+                    <th>Vibe (Style/Usage)</th>
+                    <th>Image</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@product.Name</strong><br />
+                            <small class="text-muted">@product.Type</small>
+                        </td>
+                        <td>@product.Brand</td>
+                        <td class="fw-bold text-success">@product.Price.ToString("C")</td>
+                        <td>
+                            <span class="badge bg-info text-dark">@product.NibSize</span>
+                            <span class="badge bg-secondary">@product.Color</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-outline-primary border text-primary">@product.Style</span>
+                            <span class="badge bg-outline-secondary border text-secondary">@product.Usage</span>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                            {
+                                <img src="@Url.Content(product.ImageUrl)" width="50" height="50" class="rounded shadow-sm" style="object-fit: cover;" onerror="this.src='/favicon.ico'" />
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a class="btn btn-outline-warning btn-sm" href="@Url.Action("EditPr", "Product", new { id = product.Id })">Edit</a>
+                                <a class="btn btn-outline-danger btn-sm" href="@Url.Action("DeletePr", "Product", new { id = product.Id })" onclick="return confirm('Delete this pen?')">Delete</a>
+                                <a class="btn btn-success btn-sm" href="@Url.Action("AddToCart", "ShoppingCarts", new { productId = product.Id })">Add</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
