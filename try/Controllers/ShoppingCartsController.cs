@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using MarkShop.Data.ShopSbS.Data;
+using MarkShop.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MarkShop.Data.ShopSbS.Data;
-using MarkShop.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MarkShop.Controllers
 {
@@ -22,25 +23,23 @@ namespace MarkShop.Controllers
         // GET: ShoppingCarts
         public async Task<IActionResult> IndexShC()
         {
-            // 1. Security Check: Is user logged in?
-            if (!User.Identity.IsAuthenticated)
+            // If Admin, show everything
+            if (User.IsInRole("Admin"))
             {
-                return RedirectToAction("Login", "Account");
+                var allCarts = await _context.shoppingCarts
+                    .Include(s => s.Items)
+                    .ToListAsync();
+                return View(allCarts);
             }
 
-            // 2. Get the current user's ID
-            var userIdString = User.FindFirst("CustomerId")?.Value;
-            if (userIdString == null) return RedirectToAction("Login", "Account");
-
-            int customerId = int.Parse(userIdString);
-
-            // 3. Filter: Only show carts that belong to THIS customer
-            var myCarts = await _context.shoppingCarts
-                .Include(s => s.Customer)
-                .Where(s => s.CustomerId == customerId) // <--- The Logic
+            // If Customer, show only THEIR cart
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userCarts = await _context.shoppingCarts
+                .Where(s => s.CustomerId == userId)
+                .Include(s => s.Items)
                 .ToListAsync();
 
-            return View(myCarts);
+            return View(userCarts);
         }
 
         // GET: ShoppingCarts/Details/5

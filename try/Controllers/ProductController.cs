@@ -1,7 +1,9 @@
-﻿using MarkShop.Data.ShopSbS.Data;
-using MarkShop.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MarkShop.Models;
+using MarkShop.Data.ShopSbS.Data;
+using Microsoft.AspNetCore.Authorization;
+
 namespace MarkShop.Controllers
 {
     public class ProductController : Controller
@@ -13,106 +15,62 @@ namespace MarkShop.Controllers
             _context = context;
         }
 
-        public IActionResult IndexPr1()
+        // Everyone can see products
+        public async Task<IActionResult> IndexPr1()
         {
-            var products = _context.Products.ToList();
-            return View(products);
+            return View(await _context.Products.ToListAsync());
         }
-        public IActionResult CreatePr()
-        {
-            return View();
-        }
+
+        // Only Admin can create
+        [Authorize(Roles = "Admin")]
+        public IActionResult CreatePr() => View();
+
         [HttpPost]
-        public IActionResult CreatePr(Product product)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreatePr(Product product)
         {
             if (ModelState.IsValid)
             {
-                // If the user entered an image name, prepend /images/
-                if (!string.IsNullOrWhiteSpace(product.ImageUrl) && !product.ImageUrl.StartsWith("/images/"))
-                {
-                    product.ImageUrl = "/images/" + product.ImageUrl.TrimStart('/');
-                }
-                _context.Products.Add(product);
-                _context.SaveChanges();
+                _context.Add(product);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(IndexPr1));
             }
             return View(product);
         }
+
+        // Only Admin can edit
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditPr(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
+            if (product == null) return NotFound();
             return View(product);
         }
 
-        //POST: ShoppingCarts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditPr(int id, Product product)
         {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
-
+            if (id != product.Id) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!productExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                _context.Update(product);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(IndexPr1));
             }
             return View(product);
         }
-        public async Task<IActionResult> DeletePr(int? id)
-        {
-            
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(IndexPr1));
-        }
-        //----------------------------SHOPPING CART--------------------
-        
-        // POST: ShoppingCarts/Delete/5
+        // Only Admin can delete
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("DeletePr")]
-        [ValidateAntiForgeryToken]
-        private bool productExists(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            var product = await _context.Products.FindAsync(id);
+            if (product != null) _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(IndexPr1));
         }
     }
 }
