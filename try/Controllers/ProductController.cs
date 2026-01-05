@@ -15,13 +15,12 @@ namespace MarkShop.Controllers
             _context = context;
         }
 
-        // Everyone can see products
+        // Public view
         public async Task<IActionResult> IndexPr1()
         {
             return View(await _context.Products.ToListAsync());
         }
 
-        // Only Admin can create
         [Authorize(Roles = "Admin")]
         public IActionResult CreatePr() => View();
 
@@ -38,7 +37,6 @@ namespace MarkShop.Controllers
             return View(product);
         }
 
-        // Only Admin can edit
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditPr(int? id)
         {
@@ -62,10 +60,8 @@ namespace MarkShop.Controllers
             return View(product);
         }
 
-        // Only Admin can delete
         [Authorize(Roles = "Admin")]
-        [HttpPost, ActionName("DeletePr")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeletePr(int id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product != null) _context.Products.Remove(product);

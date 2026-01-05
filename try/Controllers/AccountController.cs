@@ -22,6 +22,7 @@ namespace MarkShop.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
+            // Find user in DB
             var user = await _context.Customers
                 .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
 
@@ -32,7 +33,7 @@ namespace MarkShop.Controllers
                     new Claim(ClaimTypes.Name, user.Name),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    // IMPORTANT: Assign the role from the database to the session
+                    // Crucial: Add the role to the claims
                     new Claim(ClaimTypes.Role, user.Role)
                 };
 
