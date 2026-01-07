@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using MarkShop.Models;
 
+
 namespace MarkShop.Controllers
 {
     [Authorize]
@@ -24,7 +25,7 @@ namespace MarkShop.Controllers
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdStr, out int userId)) return RedirectToAction("Login", "Account");
 
-            // 1. Find the user's cart or create a new one if it doesn't exist
+            // 1. Find the user's cart including its current items
             var cart = await _context.shoppingCarts
                 .Include(c => c.Items)
                 .FirstOrDefaultAsync(c => c.CustomerId == userId);
@@ -33,7 +34,7 @@ namespace MarkShop.Controllers
             {
                 cart = new ShoppingCart { CustomerId = userId };
                 _context.shoppingCarts.Add(cart);
-                await _context.SaveChangesAsync(); // Save to get the Cart Id
+                await _context.SaveChangesAsync();
             }
 
             // 2. Check if the product is already in the cart
@@ -43,24 +44,23 @@ namespace MarkShop.Controllers
             {
                 // If it exists, just increase quantity
                 cartItem.Quantity++;
-                _context.Update(cartItem);
+                // No need for _context.Update if the object is already tracked
             }
             else
             {
-                // If it's new, add a new CartItem
-                var newItem = new CartItem
+                // IMPORTANT: Add the item directly to the cart's collection
+                // This ensures EF Core links it to this specific shopping cart
+                cart.Items.Add(new CartItem
                 {
                     ProductId = productId,
-                    Quantity = 1,
-                   
-                };
-                _context.CartItems.Add(newItem);
+                    Quantity = 1
+                });
             }
 
             await _context.SaveChangesAsync();
 
             // Redirect to the cart view to show the result
-            return RedirectToAction(nameof(IndexShC));
+            return RedirectToAction("IndexPr1", "Product");
         }
 
         // GET: ShoppingCarts/IndexShC

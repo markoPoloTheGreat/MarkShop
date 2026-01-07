@@ -5,7 +5,7 @@
 namespace MarkShop.Migrations
 {
     /// <inheritdoc />
-    public partial class _52 : Migration
+    public partial class _123 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

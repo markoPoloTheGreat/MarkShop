@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarkShop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260105130559_52")]
-    partial class _52
+    [Migration("20260107140143_123")]
+    partial class _123
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
