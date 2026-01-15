@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 
 
 namespace MarkShop.Models
@@ -34,5 +35,7 @@ namespace MarkShop.Models
         // --- Personality Specs (For the Matchmaker) ---
         public PenStyle? Style { get; set; }  // Matches user vibe
         public PenUsage? Usage { get; set; }  // Matches user needs
+        // Format: "[Price, Pro, Mod, Prec, Dur, Pres, Flash, Port]"
+        public string? Vector { get; set; }
     }
 }
