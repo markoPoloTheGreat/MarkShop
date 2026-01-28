@@ -60,8 +60,7 @@ namespace MarkShop.Data
                             string rawName = csv.GetField(0) ?? "";
                             string[] parts;
 
-                            // LOGIC: If column 1 has a comma and column 2 is empty, 
-                            // the CSV was read as one giant string. We split it manually.
+                            
                             if (rawName.Contains(",") && string.IsNullOrEmpty(csv.GetField(1)))
                             {
                                 parts = rawName.Split(',').Select(p => p.Trim('\"', ' ')).ToArray();
@@ -89,7 +88,8 @@ namespace MarkShop.Data
                                 Color = parts.Length > 6 ? parts[6] : "N/A",
                                 NibSize = parts.Length > 7 ? parts[7] : "N/A",
                                 Style = parts.Length > 8 && Enum.TryParse<PenStyle>(parts[8], true, out var s) ? s : PenStyle.Modern,
-                                Usage = parts.Length > 9 && Enum.TryParse<PenUsage>(parts[9], true, out var u) ? u : PenUsage.Everyday
+                                Usage = parts.Length > 9 && Enum.TryParse<PenUsage>(parts[9], true, out var u) ? u : PenUsage.Everyday,
+                                Vector = parts[9]
                             };
 
                             context.Products.Add(product);
