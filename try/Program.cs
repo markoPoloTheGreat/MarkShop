@@ -17,7 +17,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     });
-
+builder.Services.AddScoped<MarkShop.Services.MahalanobisService>();
 var app = builder.Build();
 
 // Database initialization and Seeding
