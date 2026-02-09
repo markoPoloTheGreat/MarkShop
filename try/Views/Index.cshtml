@@ -1,0 +1,172 @@
+﻿@model MarkShop.Models.QuizViewModel
+
+@{
+    ViewData["Title"] = "Find Your Pen";
+}
+
+<style>
+    /* TikTok Style Image Grid Selection */
+    .aesthetic-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .aesthetic-option input[type="radio"] {
+        display: none; /* Hide the actual radio button */
+    }
+
+    .aesthetic-card {
+        height: 150px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 4px solid transparent;
+        transition: transform 0.2s, border-color 0.2s;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+        font-weight: bold;
+        font-size: 1.2rem;
+        background-size: cover;
+        background-position: center;
+    }
+
+    /* Selection Highlight */
+    .aesthetic-option input:checked + .aesthetic-card {
+        border-color: #007bff;
+        transform: scale(1.05);
+    }
+
+    /* Simulation of Images using Gradients */
+    .bg-dark-academia { background: linear-gradient(135deg, #2c1e1e, #5a3a3a); }
+    .bg-cyberpunk { background: linear-gradient(135deg, #2b0042, #b800e6); }
+    .bg-minimalist { background: linear-gradient(135deg, #e0e0e0, #ffffff); color: #333; text-shadow: none; }
+    .bg-cottagecore { background: linear-gradient(135deg, #6b8c42, #d4e157); }
+
+</style>
+
+<div class="container" style="max-width: 600px;">
+    <h2 class="text-center mb-4">What's Your Vibe?</h2>
+    <p class="text-center text-muted mb-5">Answer quickly. The algorithm is watching.</p>
+
+    <form asp-action="CalculateResult" method="post" id="quizForm">
+
+        <!-- Hidden Inputs for JS Data -->
+        <input type="hidden" asp-for="GridX" id="inputX" value="0" />
+        <input type="hidden" asp-for="GridY" id="inputY" value="0" />
+        <input type="hidden" asp-for="ReactionTimeMs" id="inputTime" value="0" />
+
+        <!-- 1. Visual Aesthetic Choice -->
+        <div class="mb-5">
+            <h5>1. Pick your universe.</h5>
+            <div class="aesthetic-container">
+
+                <label class="aesthetic-option">
+                    <input type="radio" asp-for="VisualChoice" value="DarkAcademia" required />
+                    <div class="aesthetic-card bg-dark-academia">
+                        Dark Academia
+                    </div>
+                </label>
+
+                <label class="aesthetic-option">
+                    <input type="radio" asp-for="VisualChoice" value="Cyberpunk" />
+                    <div class="aesthetic-card bg-cyberpunk">
+                        Cyberpunk
+                    </div>
+                </label>
+
+                <label class="aesthetic-option">
+                    <input type="radio" asp-for="VisualChoice" value="Minimalist" />
+                    <div class="aesthetic-card bg-minimalist">
+                        Minimalist
+                    </div>
+                </label>
+
+                <label class="aesthetic-option">
+                    <input type="radio" asp-for="VisualChoice" value="Cottagecore" />
+                    <div class="aesthetic-card bg-cottagecore">
+                        Cottagecore
+                    </div>
+                </label>
+
+            </div>
+        </div>
+
+        <!-- 2. Slider A (Entropy) -->
+        <div class="card p-4 mb-4 shadow-sm border-0 bg-light">
+            <label class="form-label fw-bold">2. Your workspace state:</label>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Military Precision</span>
+                <span>Creative Explosion</span>
+            </div>
+            <input type="range" class="form-range" min="1" max="10" step="1" asp-for="ScaleMetricA">
+        </div>
+
+        <!-- 3. Slider B (Risk) -->
+        <div class="card p-4 mb-4 shadow-sm border-0 bg-light">
+            <label class="form-label fw-bold">3. Lending your pen to a friend:</label>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>"Whatever"</span>
+                <span>"Watching like a hawk"</span>
+            </div>
+            <input type="range" class="form-range" min="1" max="10" step="1" asp-for="ScaleMetricB">
+        </div>
+
+        <!-- 4. The XY Plot -->
+        <div class="card p-4 mb-5 shadow-sm border-0">
+            <label class="form-label fw-bold text-center w-100">4. Tap where you belong</label>
+
+            <div class="position-relative mx-auto mt-3"
+                 style="width: 280px; height: 280px; border: 2px solid #333; background: #fff; cursor: crosshair; border-radius: 4px;"
+                 id="coordGrid">
+
+                <!-- Axis Labels -->
+                <span style="position:absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-weight:bold; color: #555;">FORM OVER FUNCTION</span>
+                <span style="position:absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-weight:bold; color: #555;">FUNCTION OVER FORM</span>
+                <span style="position:absolute; left: 5px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 0.8rem; font-weight:bold; color: #555;">INTROVERT</span>
+                <span style="position:absolute; right: -15px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 0.8rem; font-weight:bold; color: #555;">EXTROVERT</span>
+
+                <!-- Grid Lines -->
+                <div style="position:absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #eee;"></div>
+                <div style="position:absolute; left: 50%; top: 0; height: 100%; width: 1px; background: #eee;"></div>
+
+                <!-- The Click Dot -->
+                <div id="userDot" style="width: 20px; height: 20px; background: #007bff; border-radius: 50%; position: absolute; display: none; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark btn-lg w-100 py-3 rounded-pill">Analyze Personality</button>
+    </form>
+</div>
+
+<script>
+    // 1. Capture Time
+    const startTime = Date.now();
+    document.getElementById('quizForm').addEventListener('submit', function() {
+        document.getElementById('inputTime').value = Date.now() - startTime;
+    });
+
+    // 2. XY Grid Logic
+    const grid = document.getElementById('coordGrid');
+    const dot = document.getElementById('userDot');
+
+    grid.addEventListener('click', function(e) {
+        const rect = grid.getBoundingClientRect();
+        const xPixel = e.clientX - rect.left;
+        const yPixel = e.clientY - rect.top;
+
+        // Convert to -1.0 to 1.0
+        const xVal = ((xPixel / rect.width) * 2 - 1).toFixed(2);
+        const yVal = -((yPixel / rect.height) * 2 - 1).toFixed(2); // Invert Y because screen Y is top-down
+
+        dot.style.left = xPixel + 'px';
+        dot.style.top = yPixel + 'px';
+        dot.style.display = 'block';
+
+        document.getElementById('inputX').value = xVal;
+        document.getElementById('inputY').value = yVal;
+    });
+</script>
