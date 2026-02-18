@@ -33,7 +33,11 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
 
         Console.WriteLine("--> Starting Seeder...");
-        SeedData.Initialize(context);
+
+        // CHANGE THIS LINE:
+        // Pass 'services' (the IServiceProvider), not 'context'.
+        // This matches the signature: public static void Initialize(IServiceProvider serviceProvider)
+        SeedData.Initialize(services);
     }
     catch (Exception ex)
     {

@@ -1,114 +1,83 @@
-﻿using System.Globalization;
-using CsvHelper;
-using CsvHelper.Configuration;
+﻿using MarkShop.Data.ShopSbS.Data;
 using MarkShop.Models;
-using MarkShop.Data.ShopSbS.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MarkShop.Data
 {
     public static class SeedData
     {
-        public static void Initialize(AppDbContext context)
+        // THIS SIGNATURE MUST MATCH PROGRAM.CS
+        public static void Initialize(IServiceProvider serviceProvider)
         {
-            // 1. Detect and clear "mangled" data (where everything is stuck in the Name field)
-            // If any product has a comma in the name but an empty brand, it's likely mangled.
-            if (context.Products.Any(p => p.Name.Contains(",") && (p.Brand == "Generic" || string.IsNullOrEmpty(p.Brand))))
-            {
-                Console.WriteLine("--> SEEDER: Mangled data detected. Cleaning database for a fresh start...");
-                context.Products.RemoveRange(context.Products);
-                context.SaveChanges();
-            }
+            // We get the context manually here using the provider
+            var context = serviceProvider.GetRequiredService<AppDbContext>();
 
-            // 2. Skip if we already have clean data
+            // Check if the database is already seeded
             if (context.Products.Any())
             {
-                Console.WriteLine("--> SEEDER: Database already contains products. Skipping.");
-                return;
+                return;   // DB has data, do nothing
             }
 
-            // 3. Find the file in the output directory
-            var filePath = Path.Combine(AppContext.BaseDirectory, "pens.csv");
+            // Look for pens.csv in the root folder
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "pens.csv");
+
             if (!File.Exists(filePath))
             {
-                Console.WriteLine($"--> SEEDER ERROR: File not found at {filePath}");
+                Console.WriteLine("Seed file pens.csv not found at: " + filePath);
                 return;
             }
 
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                HasHeaderRecord = true,
-                MissingFieldFound = null,
-                HeaderValidated = null,
-                BadDataFound = null
-            };
+            var lines = File.ReadAllLines(filePath);
+            if (lines.Length <= 1) return; // Empty or just headers
 
-            try
+            // REGEX FIX: Splits by comma ONLY if outside quotes
+            var splitPattern = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";
+
+            // Parse headers
+            var headers = Regex.Split(lines[0], splitPattern)
+                               .Select(h => h.Trim().Trim('"').Replace("\uFEFF", ""))
+                               .ToList();
+
+            for (int i = 1; i < lines.Length; i++)
             {
-                using (var reader = new StreamReader(filePath))
-                using (var csv = new CsvReader(reader, config))
+                var line = lines[i];
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var cols = Regex.Split(line, splitPattern)
+                                .Select(c => c.Trim().Trim('"'))
+                                .ToList();
+
+                string GetCol(string name)
                 {
-                    csv.Read();
-                    csv.ReadHeader();
-
-                    int count = 0;
-                    while (csv.Read())
-                    {
-                        try
-                        {
-                            string rawName = csv.GetField(0) ?? "";
-                            string[] parts;
-
-                            
-                            if (rawName.Contains(",") && string.IsNullOrEmpty(csv.GetField(1)))
-                            {
-                                parts = rawName.Split(',').Select(p => p.Trim('\"', ' ')).ToArray();
-                            }
-                            else
-                            {
-                                // Standard CSV parsing worked
-                                parts = new string[10];
-                                for (int i = 0; i < 10; i++)
-                                {
-                                    parts[i] = csv.GetField(i) ?? "";
-                                }
-                            }
-
-                            if (parts.Length < 2) continue;
-
-                            var product = new Product
-                            {
-                                Name = parts[0],
-                                Brand = parts.Length > 1 ? parts[1] : "Generic",
-                                Price = parts.Length > 2 && double.TryParse(parts[2], CultureInfo.InvariantCulture, out var p) ? p : 0.0,
-                                Description = parts.Length > 3 ? parts[3] : "",
-                                ImageUrl = parts.Length > 4 ? parts[4] : "",
-                                Type = parts.Length > 5 && Enum.TryParse<ProductType>(parts[5], true, out var t) ? t : ProductType.Pen,
-                                Color = parts.Length > 6 ? parts[6] : "N/A",
-                                NibSize = parts.Length > 7 ? parts[7] : "N/A",
-                                Style = parts.Length > 8 && Enum.TryParse<PenStyle>(parts[8], true, out var s) ? s : PenStyle.Modern,
-                                Usage = parts.Length > 9 && Enum.TryParse<PenUsage>(parts[9], true, out var u) ? u : PenUsage.Everyday,
-                                Vector = parts[9]
-                            };
-
-                            context.Products.Add(product);
-                            count++;
-                        }
-                        catch (Exception rowEx)
-                        {
-                            Console.WriteLine($"--> SEEDER ROW ERROR: Skipping row. {rowEx.Message}");
-                        }
-                    }
-
-                    context.SaveChanges();
-                    Console.WriteLine($"--> SEEDER SUCCESS: Imported {count} products correctly.");
+                    int idx = headers.IndexOf(name);
+                    return (idx >= 0 && idx < cols.Count) ? cols[idx] : null;
                 }
+
+                var product = new Product
+                {
+                    Name = GetCol("Name") ?? "Unknown Pen",
+                    Brand = GetCol("Brand") ?? "",
+                    Description = GetCol("Description") ?? "",
+                    ImageUrl = GetCol("ImageUrl") ?? "",
+                    Color = GetCol("Color"),
+                    NibSize = GetCol("NibSize"),
+                    Vector = GetCol("Vector")
+                };
+
+                if (double.TryParse(GetCol("Price"), out double price)) product.Price = price;
+                if (Enum.TryParse<ProductType>(GetCol("Type"), true, out var type)) product.Type = type;
+                if (Enum.TryParse<PenStyle>(GetCol("Style"), true, out var style)) product.Style = style;
+                if (Enum.TryParse<PenUsage>(GetCol("Usage"), true, out var usage)) product.Usage = usage;
+
+                context.Products.Add(product);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"--> SEEDER CRITICAL ERROR: {ex.Message}");
-            }
+
+            context.SaveChanges();
         }
     }
 }
