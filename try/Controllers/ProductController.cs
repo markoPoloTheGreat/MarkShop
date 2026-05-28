@@ -15,10 +15,9 @@ namespace MarkShop.Controllers
             _context = context;
         }
 
-        // Public view
         public async Task<IActionResult> IndexPr1()
         {
-            return View(await _context.Products.ToListAsync());
+            return View(await _context.Products.Include(p => p.Supply).ToListAsync());
         }
 
         [Authorize(Roles = "Admin")]
