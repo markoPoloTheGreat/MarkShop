@@ -16,7 +16,28 @@ namespace MarkShop.Data
         {
             // We get the context manually here using the provider
             var context = serviceProvider.GetRequiredService<AppDbContext>();
+            if (!context.Customers.Any())
+            {
+                context.Customers.AddRange(
+                    new Customer
+                    {
+                        Name = "Goblin Admin", // Using your nickname!
+                        Email = "admin@com",
+                        Password = "admin", // Change this to whatever you want to type to log in
+                        Role = "Admin"
+                    },
+                    new Customer
+                    {
+                        Name = "Test Student",
+                        Email = "mark@com",
+                        Password = "123",
+                        Role = "Customer"
+                    }
+                );
 
+                context.SaveChanges();
+                Console.WriteLine("--> Seeded default Admin and Customer.");
+            }
             // Check if the database is already seeded
             if (context.Products.Any())
             {

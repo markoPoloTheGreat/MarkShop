@@ -67,5 +67,34 @@ namespace MarkShop.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(IndexPr1));
         }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> QuickRestock(int productId, int quantityToAdd)
+        {
+            var product = await _context.Products
+                .Include(p => p.Supply)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product == null) return NotFound();
+
+            if (product.Supply == null)
+            {
+                // If it never had a supply record, create one
+                product.Supply = new ProductSupply
+                {
+                    Quantity = quantityToAdd,
+                };
+            }
+            else
+            {
+                // Add to existing stock
+                product.Supply.Quantity += quantityToAdd;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Successfully added {quantityToAdd} to {product.Name}'s stock!";
+            return RedirectToAction(nameof(IndexPr1));
+        }
     }
 }
