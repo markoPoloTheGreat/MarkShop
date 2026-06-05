@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<MarkShop.Models.Product>
 
 @{//ewfere
-    ViewData["Title"] = "The Writing Gallery";
+    ViewData["Title"] = "The Gallery";
 }
 
 <!-- Bootstrap Icons -->
@@ -18,7 +18,6 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 border-bottom pb-4">
         <div>
             <h1 class="display-5 fw-bold text-dark mb-1">The Writing Gallery</h1>
-            <p class="lead text-muted mb-md-0">Premium instruments for the discerning writer.</p>
         </div>
 
         @if (User.IsInRole("Admin"))

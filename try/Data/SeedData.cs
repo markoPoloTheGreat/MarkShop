@@ -11,25 +11,30 @@ namespace MarkShop.Data
 {
     public static class SeedData
     {
-        // THIS SIGNATURE MUST MATCH PROGRAM.CS
         public static void Initialize(IServiceProvider serviceProvider)
         {
-            // We get the context manually here using the provider
             var context = serviceProvider.GetRequiredService<AppDbContext>();
             if (!context.Customers.Any())
             {
                 context.Customers.AddRange(
                     new Customer
                     {
-                        Name = "Goblin Admin", // Using your nickname!
+                        Name = "Goblin Admin", 
                         Email = "admin@com",
-                        Password = "admin", // Change this to whatever you want to type to log in
+                        Password = "admin", 
                         Role = "Admin"
                     },
                     new Customer
                     {
-                        Name = "Test Student",
+                        Name = "mark",
                         Email = "mark@com",
+                        Password = "123",
+                        Role = "Customer"
+                    },
+                    new Customer
+                    {
+                        Name = "roei",
+                        Email = "roei@com",
                         Password = "123",
                         Role = "Customer"
                     }
@@ -38,13 +43,12 @@ namespace MarkShop.Data
                 context.SaveChanges();
                 Console.WriteLine("--> Seeded default Admin and Customer.");
             }
-            // Check if the database is already seeded
             if (context.Products.Any())
             {
-                return;   // DB has data, do nothing
+                return;   
             }
 
-            // Look for pens.csv in the root folder
+            
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "pens.csv");
 
             if (!File.Exists(filePath))
@@ -54,12 +58,12 @@ namespace MarkShop.Data
             }
 
             var lines = File.ReadAllLines(filePath);
-            if (lines.Length <= 1) return; // Empty or just headers
+            if (lines.Length <= 1) return; 
 
-            // REGEX FIX: Splits by comma ONLY if outside quotes
+            
             var splitPattern = @",(?=(?:[^""]*""[^""]*"")*[^""]*$)";
 
-            // Parse headers
+            // Parsing
             var headers = Regex.Split(lines[0], splitPattern)
                                .Select(h => h.Trim().Trim('"').Replace("\uFEFF", ""))
                                .ToList();
