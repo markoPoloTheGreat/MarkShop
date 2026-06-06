@@ -1,42 +1,107 @@
 ﻿@model MarkShop.Models.Product
 
 @{
-    ViewData["Title"] = "Add New Product";
+    ViewData["Title"] = "Create New Arrival";
 }
 
-<h2>Add New Product</h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white p-4">
+                    <h3 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add New Instrument</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CreatePr">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<form asp-action="CreatePr" method="post">
-    <div class="form-group">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h5 class="text-muted border-bottom pb-2 mb-3">Basic Details</h5>
 
-        @* שורה שם תוית שם השדה *@
-        <label asp-for="Name" class="control-label"></label>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold"></label>
+                                    <input asp-for="Name" class="form-control" placeholder="e.g., Lamy Safari" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Brand" class="form-label fw-bold"></label>
+                                    <input asp-for="Brand" class="form-control" />
+                                    <span asp-validation-for="Brand" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Price" class="form-label fw-bold"></label>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="ImageUrl" class="form-label fw-bold">Image Path</label>
+                                    <input asp-for="ImageUrl" class="form-control" placeholder="/images/pen.jpg" />
+                                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="form-label fw-bold"></label>
+                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
 
-        @* כאן יוזן ערך השדה-במקרה זה השם *@
-        <input asp-for="Name" class="form-control" />
+                            <div class="col-md-6">
+                                <h5 class="text-muted border-bottom pb-2 mb-3">Specifications & Vectors</h5>
 
-        @* השורה הבאה מנהלת הזנה שאינה עומדת בדרישות המודל *@
-        <span asp-validation-for="Name" class="text-danger"></span>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Type" class="form-label fw-bold"></label>
+                                    <select asp-for="Type" asp-items="Html.GetEnumSelectList<MarkShop.Models.ProductType>()" class="form-select"></select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 form-group mb-3">
+                                        <label asp-for="Color" class="form-label fw-bold"></label>
+                                        <input asp-for="Color" class="form-control" />
+                                        <span asp-validation-for="Color" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-6 form-group mb-3">
+                                        <label asp-for="NibSize" class="form-label fw-bold"></label>
+                                        <input asp-for="NibSize" class="form-control" />
+                                        <span asp-validation-for="NibSize" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 form-group mb-3">
+                                        <label asp-for="Style" class="form-label fw-bold"></label>
+                                        <select asp-for="Style" asp-items="Html.GetEnumSelectList<MarkShop.Models.PenStyle>()" class="form-select">
+                                            <option value="">-- Select --</option>
+                                        </select>
+                                        <span asp-validation-for="Style" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-6 form-group mb-3">
+                                        <label asp-for="Usage" class="form-label fw-bold"></label>
+                                        <select asp-for="Usage" asp-items="Html.GetEnumSelectList<MarkShop.Models.PenUsage>()" class="form-select">
+                                            <option value="">-- Select --</option>
+                                        </select>
+                                        <span asp-validation-for="Usage" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Vector" class="form-label fw-bold">Algorithm Vector</label>
+                                    <input asp-for="Vector" class="form-control font-monospace" placeholder="e.g., [-0.95, -0.5, 1.0, 0.6...]" />
+                                    <span asp-validation-for="Vector" class="text-danger"></span>
+                                    <small class="text-muted d-block mt-1">Format: [Price, Pro, Mod, Prec, Dur, Pres, Flash, Port]</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between border-top pt-4 mt-2">
+                            <a asp-action="IndexPr1" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">Save Product</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label asp-for="Price" class="control-label"></label>
-        <input asp-for="Price" class="form-control" type="number" step="0.01" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="ImageUrl" class="control-label"></label>
-        <input asp-for="ImageUrl" class="form-control" />
-        <span asp-validation-for="ImageUrl" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">Create</button>
-    <a asp-action="IndexPr1" class="btn btn-secondary">Back to List</a>
-</form>
-@* הקוד הבא מאפשר לבצע וולידציית נתוכים מוזנים בצד לקוח בלי לפנות לשרת *@
+</div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

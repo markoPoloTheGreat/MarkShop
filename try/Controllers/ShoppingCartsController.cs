@@ -87,13 +87,13 @@ namespace MarkShop.Controllers
 
             List<ShoppingCart> carts;
 
-            if (isAdmin)
+            if(isAdmin)
             {
-                carts = await cartsQuery.ToListAsync();
+                carts = await cartsQuery.Where(s => s.IsCheckedOut == false).ToListAsync();
             }
             else if (int.TryParse(userIdClaim, out int userId))
             {
-                carts = await cartsQuery.Where(s => s.CustomerId == userId).ToListAsync();
+                carts = await cartsQuery.Where(s => s.CustomerId == userId && s.IsCheckedOut == false).ToListAsync();
             }
             else
             {
